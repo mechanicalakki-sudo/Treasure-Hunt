@@ -1,107 +1,268 @@
+
 <!doctype html>
 <html lang="hi">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Certificate Verification</title>
-<style>
-  *{box-sizing:border-box}
-  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f6fb;color:#1f2430}
-  .wrap{max-width:480px;margin:0 auto;padding:24px 16px}
-  h1{font-size:22px;margin:8px 0 18px}
-  .card{background:#fff;border-radius:12px;padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.08)}
-  .badge{padding:14px;border-radius:8px;font-size:20px;font-weight:bold;margin-bottom:8px}
-  .ok{background:#e6f4ea;color:#137333}
-  .bad{background:#fce8e6;color:#c5221f}
-  .wait{background:#eef1f8;color:#444}
-  .lbl{margin:16px 0 0;color:#666;font-size:13px}
-  .val{margin:2px 0 0;font-size:18px;font-weight:bold;word-break:break-word}
-  .note{margin-top:22px;color:#666;font-size:13px;line-height:1.5}
-  form{display:flex;gap:8px;margin-top:6px}
-  input{flex:1;padding:12px;font-size:16px;border:1px solid #c5cad6;border-radius:8px;text-transform:uppercase}
-  button{padding:12px 16px;font-size:16px;border:0;border-radius:8px;background:#2a5bd7;color:#fff}
-  .hidden{display:none}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Certificate Verification | MechX Club</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 20px 12px;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f4f6fb;
+      color: #1f2430;
+    }
+
+    .wrap { max-width: 480px; margin: 20px auto; }
+
+    h1 { font-size: 24px; text-align: center; }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: white;
+      padding: 22px;
+      border-radius: 14px;
+      box-shadow: 0 3px 14px #00000012;
+    }
+
+    .badge {
+      padding: 14px;
+      border-radius: 9px;
+      font-size: 19px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+
+    .ok { background: #e6f4ea; color: #137333; }
+    .bad { background: #fce8e6; color: #c5221f; }
+    .wait { background: #eef1f8; color: #444; }
+
+    .lbl { margin: 17px 0 4px; color: #666; font-size: 13px; }
+    .val { margin: 0; font-size: 17px; font-weight: bold; overflow-wrap: anywhere; }
+    .note { margin-top: 20px; font-size: 13px; line-height: 1.5; color: #666; }
+
+    form { display: flex; gap: 8px; margin-top: 18px; }
+
+    input {
+      min-width: 0;
+      flex: 1;
+      padding: 12px;
+      font-size: 15px;
+      border: 1px solid #c5cad6;
+      border-radius: 8px;
+    }
+
+    button {
+      padding: 12px 15px;
+      font-size: 15px;
+      font-weight: bold;
+      border: 0;
+      border-radius: 8px;
+      background: #2457d6;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: .6; cursor: wait; }
+    .hidden { display: none; }
+
+    footer {
+      text-align: center;
+      color: #777;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-  <h1>Certificate Verification</h1>
-  <div class="card">
-    <div id="result"></div>
-    <form id="manual" class="hidden">
-      <input id="idbox" placeholder="Certificate ID, जैसे EVT26-ABC123" autocomplete="off">
-      <button type="submit">Verify</button>
-    </form>
-    <p class="note" id="footnote"></p>
-  </div>
-</div>
+  <main class="wrap">
+    <h1>Certificate Verification</h1>
+    <p class="subtitle">MechX Club · Official Verification Portal</p>
 
-<script>
-// ====== सिर्फ यही एक लाइन बदलनी हो सकती है ======
-// Apps Script का Web app URL (जो /exec पर खत्म होता है)
-var API_URL = 'https://script.google.com/macros/s/AKfycbxttNpb5zOlHlmRIaZ8KY0POEjw_NO0-MpSjLqrMEvZ8uL7PSCmeu74rqDE7KIItvkAVw/exec';
+    <section class="card">
+      <div id="result" aria-live="polite"></div>
 
-var resultEl = document.getElementById('result');
-var form = document.getElementById('manual');
-var box = document.getElementById('idbox');
-var foot = document.getElementById('footnote');
+      <form id="manual" class="hidden">
+        <input
+          id="idbox"
+          type="text"
+          placeholder="Enter Certificate ID"
+          autocomplete="off"
+          maxlength="30"
+          required
+        >
+        <button id="verifyBtn" type="submit">Verify</button>
+      </form>
 
-function el(tag, cls, text) {
-  var e = document.createElement(tag);
-  if (cls) e.className = cls;
-  if (text !== undefined) e.textContent = text;
-  return e;
-}
+      <p class="note" id="footnote">
+        Verify your certificate using its unique ID.
+      </p>
+    </section>
 
-function show(kind, title, rows, msg) {
-  resultEl.innerHTML = '';
-  resultEl.appendChild(el('div', 'badge ' + kind, title));
-  if (msg) resultEl.appendChild(el('p', '', msg));
-  (rows || []).forEach(function (r) {
-    resultEl.appendChild(el('p', 'lbl', r[0]));
-    resultEl.appendChild(el('p', 'val', r[1]));
-  });
-}
+    <footer>Certificate verification · MechX Club</footer>
+  </main>
 
-function verify(id) {
-  id = (id || '').trim().toUpperCase();
-  if (!id) {
-    show('wait', 'Certificate ID डालिए', null, 'सर्टिफिकेट का QR स्कैन करें या नीचे ID लिखें।');
-    form.classList.remove('hidden');
-    return;
-  }
-  show('wait', 'जाँच हो रही है...');
-  foot.textContent = '';
-  fetch(API_URL + '?id=' + encodeURIComponent(id))
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (d && d.valid) {
-        show('ok', '✔ Valid Certificate / प्रमाणित', [
-          ['Name', d.name],
-          ['Event', d.event],
-          ['Date', d.date],
-          ['Certificate ID', d.id],
-          ['Issued by', d.issuer]
-        ]);
-        foot.textContent = 'सर्टिफिकेट पर छपा नाम इस नाम से मिलना चाहिए।';
-      } else {
-        show('bad', '✘ Invalid Certificate / अमान्य', null, 'यह सर्टिफिकेट हमारे रिकॉर्ड में नहीं मिला।');
-        form.classList.remove('hidden');
+  <script>
+    // Apna deployed Google Apps Script /exec URL yahan rakhein.
+    var API_URL =
+      'https://script.google.com/macros/s/AKfycbxttNpb5zOlHlmRIaZ8KY0POEjw_NO0-MpSjLqrMEvZ8uL7PSCmeu74rqDE7KIItvkAVw/exec';
+
+    var resultEl = document.getElementById('result');
+    var form = document.getElementById('manual');
+    var box = document.getElementById('idbox');
+    var foot = document.getElementById('footnote');
+    var button = document.getElementById('verifyBtn');
+    var requestNumber = 0;
+    var activeScript = null;
+    var timeoutHandle = null;
+
+    function makeElement(tag, cls, text) {
+      var node = document.createElement(tag);
+      if (cls) node.className = cls;
+      if (text !== undefined) node.textContent = String(text);
+      return node;
+    }
+
+    function show(kind, title, rows, message) {
+      resultEl.replaceChildren();
+      resultEl.appendChild(makeElement('div', 'badge ' + kind, title));
+
+      if (message) {
+        resultEl.appendChild(makeElement('p', '', message));
       }
-    })
-    .catch(function () {
-      show('wait', 'कनेक्शन में दिक्कत', null, 'इंटरनेट जाँचकर पेज दोबारा खोलें।');
+
+      (rows || []).forEach(function (row) {
+        resultEl.appendChild(makeElement('p', 'lbl', row[0]));
+        resultEl.appendChild(makeElement('p', 'val', row[1] || '—'));
+      });
+    }
+
+    function cleanup() {
+      if (timeoutHandle) {
+        clearTimeout(timeoutHandle);
+        timeoutHandle = null;
+      }
+
+      if (activeScript) {
+        activeScript.remove();
+        activeScript = null;
+      }
+
+      button.disabled = false;
+    }
+
+    function verify(id) {
+      id = (id || '').trim().toUpperCase();
+
+      if (!id) {
+        show('wait', 'Enter Certificate ID', null,
+          'QR code scan karein ya certificate ID enter karein.');
+        form.classList.remove('hidden');
+        return;
+      }
+
+      // Prevent overlapping requests from changing the latest result.
+      cleanup();
+      var currentRequest = ++requestNumber;
+
+      form.classList.remove('hidden');
+      box.value = id;
+      button.disabled = true;
+      foot.textContent = '';
+
+      show('wait', 'Verifying certificate…', null,
+        'Please wait while we check the official records.');
+
+      // Only a simple JavaScript identifier is allowed as callback.
+      var callbackName = '__certCallback' + currentRequest;
+
+      window[callbackName] = function (data) {
+        if (currentRequest !== requestNumber) return;
+
+        cleanup();
+        delete window[callbackName];
+
+        if (data && data.valid === true) {
+          show('ok', '✓ VALID CERTIFICATE', [
+            ['Name', data.name],
+            ['Event', data.event],
+            ['Date', data.date],
+            ['Certificate ID', data.id],
+            ['Issued by', data.issuer]
+          ]);
+
+          foot.textContent =
+            'Please ensure the name and details match the original certificate.';
+        } else if (data && data.valid === false) {
+          show('bad', '✕ INVALID CERTIFICATE', null,
+            'This certificate ID was not found in the official records.');
+          foot.textContent = 'Check the ID and try again.';
+        } else {
+          show('wait', 'Unexpected response', null,
+            'The verification service returned an unexpected response.');
+        }
+      };
+
+      var script = document.createElement('script');
+      activeScript = script;
+
+      script.onerror = function () {
+        if (currentRequest !== requestNumber) return;
+
+        cleanup();
+        delete window[callbackName];
+
+        show('wait', 'Connection error', null,
+          'Google Apps Script se response nahi mila. Deployment URL, access settings aur internet connection check karein.');
+      };
+
+      var separator = API_URL.indexOf('?') === -1 ? '?' : '&';
+
+      script.src = API_URL + separator +
+        'id=' + encodeURIComponent(id) +
+        '&callback=' + encodeURIComponent(callbackName) +
+        '&_=' + Date.now();
+
+      timeoutHandle = setTimeout(function () {
+        if (currentRequest !== requestNumber) return;
+
+        cleanup();
+        delete window[callbackName];
+
+        show('wait', 'Request timed out', null,
+          'Server response nahi aaya. Thodi der baad dobara try karein.');
+      }, 15000);
+
+      document.head.appendChild(script);
+    }
+
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+      verify(box.value);
     });
-}
 
-form.addEventListener('submit', function (e) {
-  e.preventDefault();
-  verify(box.value);
-});
+    var params = new URLSearchParams(window.location.search);
+    var certificateId = params.get('id');
 
-var params = new URLSearchParams(window.location.search);
-verify(params.get('id'));
-</script>
+    if (certificateId) {
+      box.value = certificateId;
+      verify(certificateId);
+    } else {
+      show('wait', 'Certificate Verification', null,
+        'Apni certificate ID neeche enter karein.');
+      form.classList.remove('hidden');
+    }
+  </script>
 </body>
 </html>
