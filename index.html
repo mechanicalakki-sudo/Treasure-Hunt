@@ -193,14 +193,20 @@
         cleanup();
         delete window[callbackName];
 
-        if (data && data.valid === true) {
-          show('ok', '✓ VALID CERTIFICATE', [
-            ['Name', data.name],
-            ['Event', data.event],
-            ['Date', data.date],
-            ['Certificate ID', data.id],
-            ['Issued by', data.issuer]
-          ]);
+        
+if (data && data.valid === true) {
+  show('ok', '✓ VALID CERTIFICATE', [
+    ['Team Name', data.teamName],
+    ['Name', data.name],
+    ['Event', data.event],
+    ['Date', data.date],
+    ['Certificate ID', data.id],
+    ['Issued by', data.issuer]
+  ]);
+
+  foot.textContent =
+    'Please ensure the team name and certificate details match the original certificate.';
+
 
           foot.textContent =
             'Please ensure the name and details match the original certificate.';
